@@ -21,9 +21,20 @@ for r in response.objects:
     print(r.properties)
 
 
-response = reviews.query.near_text("Disappointed by this movie", limit=2)
+response = reviews.query.near_text(
+    "Disappointed by this movie",
+    limit=2,
+    return_references=wvc.query.QueryReference(
+        link_on="forMovie",
+        return_properties=["title"]
+    )
+)
+
 for r in response.objects:
+    for k, v in r.references.items():
+        print(v.objects[0].properties["title"])
     print(r.properties)
+
 
 
 
