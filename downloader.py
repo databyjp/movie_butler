@@ -95,8 +95,12 @@ def main():
         movie = tmdb.Movies(id=movie_id)
         logging.info(movie.info()["title"])
 
-        movie_info = save_or_load_data(data_object=movie.info(), filename=f"movie_info_{movie_id}.json")
-        movie_credits = save_or_load_data(data_object=movie.credits(), filename=f"movie_credits_{movie_id}.json")
+        movie_info = save_or_load_data(
+            data_object=movie.info(), filename=f"movie_info_{movie_id}.json"
+        )
+        movie_credits = save_or_load_data(
+            data_object=movie.credits(), filename=f"movie_credits_{movie_id}.json"
+        )
 
         movie_info_list.append(movie_info)
         movie_credits_list.append(movie_credits)
@@ -105,37 +109,44 @@ def main():
             movie_reviews = movie.reviews(page=page_no)
             if len(movie_reviews["results"]) > 0:
                 logging.info(f"Saving review page {page_no} for movie {movie_id}")
-                movie_reviews = save_or_load_data(data_object=movie_reviews, filename=f"movie_reviews_{movie_id}_page_{page_no}.json")
+                movie_reviews = save_or_load_data(
+                    data_object=movie_reviews,
+                    filename=f"movie_reviews_{movie_id}_page_{page_no}.json",
+                )
                 movie_review_list.append(movie_reviews)
                 for review in movie_reviews["results"]:
                     review_id = review["id"]
                     review["movie_id"] = movie_id
-                    save_or_load_data(data_object=review, filename=f"review_body_{review_id}.json")
+                    save_or_load_data(
+                        data_object=review, filename=f"review_body_{review_id}.json"
+                    )
             else:
                 logging.info(f"No reviews found for page: {page_no}")
 
-        cast = movie_credits["cast"]
-        if len(cast) > 0:
-            for cast_member in cast:
-                person = tmdb.People(id=cast_member["id"])
-                person_id = cast_member["id"]
-                person_info = person.info()
-                person_info = save_or_load_data(data_object=person_info, filename=f"person_info_{person_id}.json")
-                person_info_list.append(person_info)
+        # cast = movie_credits["cast"]
+        # if len(cast) > 0:
+        #     for cast_member in cast:
+        #         person = tmdb.People(id=cast_member["id"])
+        #         person_id = cast_member["id"]
+        #         person_info = person.info()
+        #         person_info = save_or_load_data(
+        #             data_object=person_info, filename=f"person_info_{person_id}.json"
+        #         )
+        #         person_info_list.append(person_info)
 
-    dataset_prefix = f"movie_reviews_{len(fdf)}"
+    dataset_prefix = f"movie_reviews_{start_year}_{end_year}_{movies_per_year}"
     fdf.to_json(output_dir / (dataset_prefix + "_movies.json"))
     movie_info_output = output_dir / (dataset_prefix + "_movies_info.json")
     movie_info_output.write_text(json.dumps(movie_info_list))
-    movie_review_output = output_dir / (dataset_prefix + "_movie_review_references.json")
-    movie_review_output.write_text(json.dumps(movie_review_list))
     reviews_output = output_dir / (dataset_prefix + "_movie_reviews.json")
     reviews_output.write_text(json.dumps(movie_review_list))
 
-    person_info_output = output_dir / (dataset_prefix + "_person_info.json")
-    person_info_output.write_text(json.dumps(person_info_list))
-    movie_credits_output = output_dir / (dataset_prefix + "_movie_credits_references.json")
-    movie_credits_output.write_text(json.dumps(movie_credits_list))
+    # person_info_output = output_dir / (dataset_prefix + "_person_info.json")
+    # person_info_output.write_text(json.dumps(person_info_list))
+    # movie_credits_output = output_dir / (
+    #     dataset_prefix + "_movie_credits_references.json"
+    # )
+    # movie_credits_output.write_text(json.dumps(movie_credits_list))
 
 
 if __name__ == "__main__":
