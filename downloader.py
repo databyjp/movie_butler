@@ -9,13 +9,18 @@ import logging
 import loggerconfig
 import json
 from tqdm import tqdm
+import requests
 
-
-API_KEY = os.getenv("TMDB_APIKEY")
 REQUESTS_TIMEOUT = (2, 5)  # seconds, for connect and read specifically
 output_dir = Path("./data")
 
+# Create output directories
+output_dir.mkdir(exist_ok=True)
+output_dir.joinpath("raw").mkdir(exist_ok=True)
+output_dir.joinpath("images").mkdir(exist_ok=True)
 
+
+# Helper functions
 def configure_tmdb():
     tmdb.API_KEY = os.getenv("TMDB_APIKEY")
     tmdb.REQUESTS_TIMEOUT = REQUESTS_TIMEOUT
@@ -67,11 +72,23 @@ def save_or_load_data(data_object: Dict, filename: str) -> Dict:
     return data_object
 
 
+def save_poster(poster_path: str, img_out_path: Path):
+    full_poster_path = f"https://image.tmdb.org/t/p/w500{poster_path}"  # Change `w500` to `original` for full size
+    if img_out_path.exists():
+        print(f"Skipping {img_out_path} - exists")
+        return None
+
+    response = requests.get(full_poster_path)
+    with open(img_out_path, "wb") as f:
+        f.write(response.content)
+    return None
+
+
 def main():
     configure_tmdb()
-    start_year = 1980
+    start_year = 1990
     end_year = 2024
-    movies_per_year = 10
+    movies_per_year = 20
 
     movie_df = retrieve_topical_movies(start_year, end_year, 5)
 
@@ -104,6 +121,11 @@ def main():
 
         movie_info_list.append(movie_info)
         movie_credits_list.append(movie_credits)
+
+        poster_path = movie_info["poster_path"]
+        if poster_path is not None:
+            img_out_path = output_dir / "images" / f"{movie_id}_poster.jpg"
+            save_poster(poster_path=poster_path, img_out_path=img_out_path)
 
         for page_no in [1, 2, 3]:
             movie_reviews = movie.reviews(page=page_no)
