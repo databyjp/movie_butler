@@ -86,9 +86,9 @@ def save_poster(poster_path: str, img_out_path: Path):
 
 def main():
     configure_tmdb()
-    start_year = 1990
+    start_year = 1960
     end_year = 2024
-    movies_per_year = 20
+    movies_per_year = 30
 
     movie_df = retrieve_topical_movies(start_year, end_year, 5)
 
