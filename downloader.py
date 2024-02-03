@@ -86,9 +86,9 @@ def save_poster(poster_path: str, img_out_path: Path):
 
 def main():
     configure_tmdb()
-    start_year = 1960
+    start_year = 2000
     end_year = 2024
-    movies_per_year = 30
+    movies_per_year = 20
 
     movie_df = retrieve_topical_movies(start_year, end_year, 5)
 
@@ -145,16 +145,16 @@ def main():
             else:
                 logging.info(f"No reviews found for page: {page_no}")
 
-        # cast = movie_credits["cast"]
-        # if len(cast) > 0:
-        #     for cast_member in cast:
-        #         person = tmdb.People(id=cast_member["id"])
-        #         person_id = cast_member["id"]
-        #         person_info = person.info()
-        #         person_info = save_or_load_data(
-        #             data_object=person_info, filename=f"person_info_{person_id}.json"
-        #         )
-        #         person_info_list.append(person_info)
+        cast = movie_credits["cast"]
+        if len(cast) > 0:
+            for cast_member in cast:
+                person = tmdb.People(id=cast_member["id"])
+                person_id = cast_member["id"]
+                person_info = person.info()
+                person_info = save_or_load_data(
+                    data_object=person_info, filename=f"person_info_{person_id}.json"
+                )
+                person_info_list.append(person_info)
 
     dataset_prefix = f"movie_reviews_{start_year}_{end_year}_{movies_per_year}"
     fdf.to_json(output_dir / (dataset_prefix + "_movies.json"))
@@ -163,12 +163,12 @@ def main():
     reviews_output = output_dir / (dataset_prefix + "_movie_reviews.json")
     reviews_output.write_text(json.dumps(movie_review_list))
 
-    # person_info_output = output_dir / (dataset_prefix + "_person_info.json")
-    # person_info_output.write_text(json.dumps(person_info_list))
-    # movie_credits_output = output_dir / (
-    #     dataset_prefix + "_movie_credits_references.json"
-    # )
-    # movie_credits_output.write_text(json.dumps(movie_credits_list))
+    person_info_output = output_dir / (dataset_prefix + "_person_info.json")
+    person_info_output.write_text(json.dumps(person_info_list))
+    movie_credits_output = output_dir / (
+        dataset_prefix + "_movie_credits_references.json"
+    )
+    movie_credits_output.write_text(json.dumps(movie_credits_list))
 
 
 if __name__ == "__main__":
